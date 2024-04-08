@@ -24,3 +24,6 @@ rustflags = ["-C", "link-args=-e __start -static -nostartfiles"]
 
 [build]
 target = "x86_64-my_os.json"
+
+[http]
+proxy = "127.0.0.1:7890" 
