@@ -28,5 +28,14 @@ fn panic(_info : &PanicInfo) -> !{
 // 默认命名为 `_start`
 #[no_mangle]
 pub extern "C" fn _start()->!{
+
+    static HELLO: &[u8] = b"Hello World!";
+    let vga_buffer = 0xb8000 as *mut u8;
+    for (i, &byte) in HELLO.iter().enumerate() {
+        unsafe {
+            *vga_buffer.offset(i as isize * 2) = byte;
+            *vga_buffer.offset(i as isize * 2 + 1) = 0xb; // 淡青色
+        }
+    }
     loop{}
 }

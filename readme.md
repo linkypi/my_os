@@ -55,13 +55,28 @@ mmx 和 sse 特征决定了是否支持单指令多数据流 （Single Instructi
 
  cargo-xbuild 工具封装了 `cargo build`；但不同的是，它将自动[交叉编译](https://so.csdn.net/so/search?q=交叉编译&spm=1001.2101.3001.7020)`core` 库和一些**编译器内建库**（compiler built-in libraries）。我们可以用下面的命令安装它
 
-```shell
+```sh
 cargo install cargo-xbuild
 ```
 
 现在我们可以使用 `xbuild` 代替 `build` 重新编译：
 
-```
+```sh
 cargo xbuild --target x86_64-my_os.json
+```
+
+### 3. 启动内核
+
+创建引导镜像
+
+```
+[dependencies]
+bootloader = "0.11.7"
+```
+
+`bootimage` 工具 —— 它将会在内核编译完毕后，将它和引导程序组合在一起，最终创建一个能够引导的磁盘映像
+
+```
+cargo install bootimage
 ```
 
