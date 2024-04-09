@@ -69,14 +69,73 @@ cargo xbuild --target x86_64-my_os.json
 
 创建引导镜像
 
-```
+```nginx
 [dependencies]
-bootloader = "0.11.7"
+bootloader = "0.9.8"  # 使用最新版本会导致无法编译通过
 ```
 
 `bootimage` 工具 —— 它将会在内核编译完毕后，将它和引导程序组合在一起，最终创建一个能够引导的磁盘映像
 
 ```
 cargo install bootimage
+```
+
+编译内核
+
+```sh
+cargo bootimage --target .\x86_64-my_os.json
+```
+
+出现错误：
+
+```sh
+> cargo bootimage --target x86_64-my_os.json 
+Building kernel
+   Compiling compiler_builtins v0.1.108
+   Compiling core v0.0.0 (/home/lynch/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core)
+   Compiling rustc-std-workspace-core v1.99.0 (/home/lynch/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/rustc-std-workspace-core)
+   Compiling alloc v0.0.0 (/home/lynch/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc)
+error[E0464]: multiple candidates for `rmeta` dependency `core` found
+ --> /home/lynch/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/rustc-std-workspace-core/lib.rs:4:9
+  |
+4 | pub use core::*;
+  |         ^^^^
+  |
+  = note: candidate #1: /tmp/cargo-xbuildOPZAyN/target/x86_64-my_os/release/deps/libcore-5f13781266999769.rmeta
+  = note: candidate #2: /tmp/cargo-xbuildOPZAyN/target/x86_64-my_os/release/deps/libcore-4697982036cf9e0d.rmeta
+
+For more information about this error, try `rustc --explain E0464`.
+error: could not compile `rustc-std-workspace-core` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: `CARGO_TARGET_DIR="/tmp/cargo-xbuildOPZAyN/target" RUSTFLAGS="-Cembed-bitcode=yes" RUST_TARGET_PATH="" __CARGO_DEFAULT_LIB_METADATA="XARGO" "/home/lynch/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin/cargo" "rustc" "-p" "alloc" "--release" "--manifest-path" "/tmp/cargo-xbuildOPZAyN/Cargo.toml" "--target" "x86_64-my_os.json" "--" "-Z" "force-unstable-if-unmarked"` failed with exit code: Some(101)
+Error: Kernel build failed.
+Stderr: 
+```
+
+暂时将 .cargo/config.toml 的配置 `build-std` 注释后编译通过
+
+```toml
+[unstable]
+build-std-features = ["compiler-builtins-mem"]
+# build-std = ["compiler_builtins","alloc"]
+```
+
+启动内核, 正常显示 Hello World !
+
+```sh
+qemu-system-x86_64 -drive format=raw,file=target/x86_64-my_os/debug/bootimage-myos.bin
+```
+
+为简化编译及启动qemu操作，可以在 .cargo/config.toml 增加如下配置
+
+```toml
+[target.'cfg(target_os = "none")']
+runner = "bootimage runner"
+```
+
+编译及启动命令仅需执行：
+
+```sh
+cargo xrun --target .\x86_64-my_os.json
 ```
 
