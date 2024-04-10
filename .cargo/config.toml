@@ -8,7 +8,7 @@ target = "x86_64-my_os.json"
 
 [unstable]
 build-std-features = ["compiler-builtins-mem"]
-# build-std = ["compiler_builtins","alloc"]
+# build-std = ["compiler_builtins","core"]
 
 [target.'cfg(target_os = "none")']
 runner = "bootimage runner"

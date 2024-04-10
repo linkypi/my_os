@@ -131,6 +131,10 @@ qemu-system-x86_64 -drive format=raw,file=target/x86_64-my_os/debug/bootimage-my
 ```toml
 [target.'cfg(target_os = "none")']
 runner = "bootimage runner"
+
+[package.metadata.bootimage]
+build-command = ["xbuild"]
+run-command = ["qemu-system-x86_64", "-drive", "format=raw,file={}"]
 ```
 
 编译及启动命令仅需执行：
