@@ -13,13 +13,27 @@
 // 禁用所有 Rust 层级的入口点
 #![no_main]
 
+// 自定义测试框架
+#![feature(custom_test_frameworks)]
+#![test_runner(crate::test_runner)]
+#![reexport_test_harness_main = "test_main"]
+
+#[cfg(test)]
+pub fn test_runner(tests: &[&dyn Fn()]) {
+    println!("Running {} tests", tests.len());
+    for test in tests {
+        test();
+    }
+}
+
+
 mod vga_buffer;
 use core::panic::PanicInfo;
 
 /// 这个函数将在 panic 时被调用
-#[cfg(not(test))]
+// #[cfg(not(test))]
 #[panic_handler]
-fn panic(_info : &PanicInfo) -> !{
+fn panic(info : &PanicInfo) -> !{
     println!("{}", info);
     loop{}
 }
@@ -31,14 +45,18 @@ fn panic(_info : &PanicInfo) -> !{
 #[no_mangle]
 pub extern "C" fn _start()->!{
 
-    // vga_buffer::print_something();
-
-    // use core::fmt::Write;
-    // vga_buffer::WRITER.lock().write_str("Hello again").unwrap();
-    // write!(vga_buffer::WRITER.lock(), ", some numbers: {} {}", 42, 1.337).unwrap();
-
     // 宏位于根命名空间下
     println!("Hello World{}", "!");
 
+    #[cfg(test)]
+    test_main();
+
     loop{}
+}
+
+#[test_case]
+fn trivial_assertion() {
+    print!("trivial assertion... ");
+    assert_eq!(1, 1);
+    println!("[ok]");
 }

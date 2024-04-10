@@ -143,3 +143,8 @@ run-command = ["qemu-system-x86_64", "-drive", "format=raw,file={}"]
 cargo xrun --target .\x86_64-my_os.json
 ```
 
+单元测试
+
+```
+cargo xtest
+```
