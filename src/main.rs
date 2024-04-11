@@ -29,7 +29,7 @@ use core::panic::PanicInfo;
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    myos::hlt_loop();
 }
 
 // our panic handler in test mode
@@ -55,14 +55,14 @@ pub extern "C" fn _start()->!{
     // x86_64::instructions::interrupts::int3();
 
     // trigger a page fault
-    unsafe {
-        *(0xdeadbeef as *mut u8) = 42;
-    };
+    // unsafe {
+    //     *(0xdeadbeef as *mut u8) = 42;
+    // };
 
     #[cfg(test)]
     test_main();
 
-    loop{}
+    myos::hlt_loop();
 }
 
 #[test_case]
