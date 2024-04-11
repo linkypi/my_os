@@ -13,29 +13,30 @@
 // 禁用所有 Rust 层级的入口点
 #![no_main]
 
+
 // 自定义测试框架
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
+#![test_runner(myos::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-#[cfg(test)]
-pub fn test_runner(tests: &[&dyn Fn()]) {
-    println!("Running {} tests", tests.len());
-    for test in tests {
-        test();
-    }
-}
-
+mod serial;
 
 mod vga_buffer;
 use core::panic::PanicInfo;
 
-/// 这个函数将在 panic 时被调用
-// #[cfg(not(test))]
+// 这个函数将在 panic 时被调用
+#[cfg(not(test))] // new attribute
 #[panic_handler]
-fn panic(info : &PanicInfo) -> !{
+fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop{}
+    loop {}
+}
+
+// our panic handler in test mode
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    myos::test_panic_handler(info)
 }
 
 // 使用#[no_mangle] 这个标注属性后，编译器就不会修改它们的名字了。mangling 是一个特殊的编译阶段，
@@ -56,7 +57,5 @@ pub extern "C" fn _start()->!{
 
 #[test_case]
 fn trivial_assertion() {
-    print!("trivial assertion... ");
     assert_eq!(1, 1);
-    println!("[ok]");
 }

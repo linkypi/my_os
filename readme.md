@@ -146,5 +146,7 @@ cargo xrun --target .\x86_64-my_os.json
 单元测试
 
 ```
-cargo xtest
+cargo test -Zbuild-std=core
+
+cargo test --test should_panic
 ```
