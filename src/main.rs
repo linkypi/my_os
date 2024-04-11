@@ -8,7 +8,7 @@
  */
 
 // 不链接 Rust 标准库
- #![no_std]
+#![no_std]
 
 // 禁用所有 Rust 层级的入口点
 #![no_main]
@@ -48,6 +48,16 @@ pub extern "C" fn _start()->!{
 
     // 宏位于根命名空间下
     println!("Hello World{}", "!");
+
+    myos::init();
+
+    // invoke a breakpoint exception
+    // x86_64::instructions::interrupts::int3();
+
+    // trigger a page fault
+    unsafe {
+        *(0xdeadbeef as *mut u8) = 42;
+    };
 
     #[cfg(test)]
     test_main();
