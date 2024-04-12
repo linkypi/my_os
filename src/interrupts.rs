@@ -33,9 +33,10 @@ lazy_static! {
     static ref IDT: InterruptDescriptorTable = {
         let mut idt = InterruptDescriptorTable::new();
         idt.breakpoint.set_handler_fn(breakpoint_handler);
+        idt.page_fault.set_handler_fn(page_fault_handler);
         unsafe {
             idt.double_fault.set_handler_fn(double_fault_handler)
-                .set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX); // new
+                .set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX);
         }
 
         idt[InterruptIndex::Timer.as_usize()]
@@ -44,6 +45,23 @@ lazy_static! {
         .set_handler_fn(keyboard_interrupt_handler);
         idt
     };
+}
+
+use x86_64::structures::idt::PageFaultErrorCode;
+use crate::hlt_loop;
+
+extern "x86-interrupt" fn page_fault_handler(
+    stack_frame: InterruptStackFrame,
+    error_code: PageFaultErrorCode,
+) {
+    // CR2 寄存器会在 page fault 发生时，被 CPU 自动写入导致异常的虚拟地址
+    use x86_64::registers::control::Cr2;
+
+    println!("EXCEPTION: PAGE FAULT");
+    println!("Accessed Address: {:?}", Cr2::read());
+    println!("Error Code: {:?}", error_code);
+    println!("{:#?}", stack_frame);
+    hlt_loop();
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(
